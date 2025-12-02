@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<link rel="icon" type="image/x-icon" href="https://cdn.i-ready.com/favicon.ico">
+  <head>
+<style>
+body {
+  background: linear-gradient(120deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  color: #32325d;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 450px;
+  margin: 44px auto 0 auto;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 6px 32px rgba(76, 110, 245, 0.07), 0 1.5px 6px rgba(50,50,93,.07);
+  padding: 34px 32px 28px 32px;
+  position: relative;
+}
+
+h2 {
+  text-align: center;
+  margin-top: 0;
+  color: #4c6ef5;
+  letter-spacing: .5px;
+  font-weight: 700;
+  font-size: 2rem;
+}
+
+#drop-area {
+  border: 2.5px dashed #8ba2fa;
+  border-radius: 9px;
+  background: #f4f7ff;
+  padding: 36px 18px 30px;
+  text-align: center;
+  margin-bottom: 22px;
+  transition: border-color .3s, box-shadow .3s;
+  cursor: pointer;
+}
+#drop-area:hover, #drop-area.hover {
+  border-color: #4c6ef5;
+  box-shadow: 0 0 6px 0 #b6cefa66;
+}
+
+#output {
+  min-height: 96px;
+  background: #f2f7ff;
+  border: 1.5px solid #e7ecfa;
+  border-radius: 6px;
+  padding: 12px;
+  margin-top: 12px;
+  font-family: 'Fira Mono', 'Consolas', monospace;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  overflow-x: auto;
+  color: #1a1e2e;
+  word-break: break-word;
+}
+
+button, .button {
+  display: inline-block;
+  margin-top: 14px;
+  background: linear-gradient(100deg, #4d6efb 40%, #8ba2fa 100%);
+  color: #fff;
+  border: none;
+  padding: 11px 25px;
+  border-radius: 5px;
+  font-size: 1.09rem;
+  font-weight: 600;
+  letter-spacing: .02em;
+  cursor: pointer;
+  box-shadow: 0 1.5px 8px rgba(51,69,189,.09);
+  transition: background .22s, box-shadow .22s;
+}
+button:hover, .button:hover {
+  background: linear-gradient(100deg, #415bc7 40%, #7688c9 100%);
+  box-shadow: 0 3px 14px rgba(76, 110, 245, 0.13);
+}
+
+input[type="file"] {
+  display: none;
+}
+
+::-webkit-scrollbar {
+  height: 7px;
+  background: #f1f3fa;
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb {
+  background: #d9e1ee;
+  border-radius: 6px;
+}
+
+@media (max-width: 600px) {
+  .container {
+    padding: 20px 7vw 16px 7vw;
+  }
+}
+</style>
+  </head>
+
+
+<body>
+  <h2>Image to Text (OCR)</h2>
+  <div id="drop-area">
+    <p>Drag & drop an image here or click to select</p>
+    <input type="file" id="fileElem" accept="image/*" style="display:none" />
+    <button onclick="document.getElementById('fileElem').click();">Upload Image</button>
+  </div>
+  <div id="output"></div>
+  <button id="copy-btn" style="display:none">Copy Text</button>
+
+  <script>
+    const dropArea = document.getElementById('drop-area');
+    const fileElem = document.getElementById('fileElem');
+    const output = document.getElementById('output');
+    const copyBtn = document.getElementById('copy-btn');
+
+    dropArea.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      dropArea.style.background = '#e3e3ff';
+    });
+
+    dropArea.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      dropArea.style.background = '';
+    });
+
+    dropArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      dropArea.style.background = '';
+      if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+        handleFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    fileElem.addEventListener('change', (e) => {
+      if (e.target.files[0]) {
+        handleFile(e.target.files[0]);
+      }
+    });
+
+    function handleFile(file) {
+      if (!file.type.startsWith('image/')) {
+        output.textContent = 'Please select an image file.';
+        return;
+      }
+      output.textContent = 'Reading...';
+      copyBtn.style.display = 'none';
+      Tesseract.recognize(file, 'eng').then(({ data: { text } }) => {
+        output.textContent = text;
+        if (text.trim().length > 0) copyBtn.style.display = '';
+      }).catch(err => {
+        output.textContent = 'Error during OCR.';
+      });
+    }
+
+    copyBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText(output.textContent);
+      copyBtn.textContent = 'Copied!';
+      setTimeout(() => (copyBtn.textContent = 'Copy Text'), 1200);
+    });
+  </script>
+</body>
+</html>
+
+
